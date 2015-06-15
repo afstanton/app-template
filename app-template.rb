@@ -6,9 +6,16 @@ ruby '2.2.2'
 RUBY
 end
 
+postgres = true if yes?("Postgres >= 9.4?")
+
 gem 'bootstrap-sass', '~> 3.3.4'
 gem 'haml-rails'
 gem 'devise'
+gem 'ahoy_matey'
+
+if !postgres
+  gem 'activeuuid', '>= 0.5.0'
+end
 
 gem_group :development, :test do
   gem 'rspec-rails'
@@ -33,6 +40,7 @@ CODE
 run "rm app/assets/stylesheets/application.css"
 
 inject_into_file 'app/assets/javascripts/application.js', after: "require jquery\n" do <<-'RUBY'
+//= require ahoy
 //= require bootstrap-sprockets
 RUBY
 end
@@ -62,8 +70,17 @@ application(nil, env: "development") do
   "config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }"
 end
 
+if postgres
+  generate 'ahoy:stores:active_record -d postgresql-jsonb'
+else
+  generate 'ahoy:stores:active_record'
+end
+
 generate 'haml:application_layout convert'
 remove_file 'app/views/layouts/application.html.erb'
 rake 'haml:erb2haml'
+
+rake 'db:create'
+rake 'db:migrate'
 
 
