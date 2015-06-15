@@ -17,6 +17,8 @@ if !postgres
   gem 'activeuuid', '>= 0.5.0'
 end
 
+gem 'doorkeeper'
+
 gem_group :development, :test do
   gem 'rspec-rails'
   gem 'factory_girl_rails'
@@ -30,6 +32,12 @@ end
 run 'bundle install'
 
 generate 'rspec:install'
+
+file 'spec/support/devise.rb', <<-CODE
+RSpec.configure do |config|
+  config.include Devise::TestHelpers, type: :controller
+end
+CODE
 
 file 'app/assets/stylesheets/application.scss', <<-CODE
 // "bootstrap-sprockets" must be imported before "bootstrap" and "bootstrap/variables"
@@ -48,6 +56,17 @@ end
 inject_into_file 'app/views/layouts/application.html.erb', after: "<body>\n" do <<-'RUBY'
   <p class="notice"><%= notice %></p>
   <p class="alert"><%= alert %></p>
+RUBY
+end
+
+inject_into_file 'app/controllers/application_controller.rb', after: "protect_from_forgery with: :exception\n" do <<-'RUBY'
+
+  private
+
+  def current_resource_owner
+    User.find(doorkeeper_token.resource_owner_id) if doorkeeper_token
+  end
+
 RUBY
 end
 
@@ -74,6 +93,24 @@ if postgres
   generate 'ahoy:stores:active_record -d postgresql-jsonb'
 else
   generate 'ahoy:stores:active_record'
+end
+
+generate 'doorkeeper:install'
+generate 'doorkeeper:migration'
+generate 'doorkeeper:application_owner'
+
+comment_lines 'config/initializers/doorkeeper.rb', 'fail "Please configure doorkeeper resource_owner_authenticator block located in #{__FILE__}"'
+inject_into_file 'config/initializers/doorkeeper.rb', after: "enable_application_owner :confirmation => false\n" do <<-'RUBY'
+  enable_application_owner :confirmation => true
+RUBY
+end
+inject_into_file 'config/initializers/doorkeeper.rb', after: "resource_owner_authenticator do\n" do <<-'RUBY'
+    current_user || warden.authenticate!(scope: :user)
+RUBY
+end
+inject_into_file 'app/models/user.rb', after: ":recoverable, :rememberable, :trackable, :validatable\n" do <<-'RUBY'
+  has_many :oauth_applications, class_name: 'Doorkeeper::Application', as: :owner
+RUBY
 end
 
 generate 'haml:application_layout convert'
