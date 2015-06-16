@@ -18,6 +18,7 @@ if !postgres
 end
 
 gem 'doorkeeper'
+gem 'kaminari'
 
 gem_group :development, :test do
   gem 'rspec-rails'
@@ -112,6 +113,9 @@ inject_into_file 'app/models/user.rb', after: ":recoverable, :rememberable, :tra
   has_many :oauth_applications, class_name: 'Doorkeeper::Application', as: :owner
 RUBY
 end
+
+generate 'kaminari:config'
+generate 'kaminari:views bootstrap3 -e haml'
 
 generate 'haml:application_layout convert'
 remove_file 'app/views/layouts/application.html.erb'
