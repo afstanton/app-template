@@ -34,6 +34,12 @@ end
 gem_group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem 'annotate'
+  gem 'rubocop', require: false
+  gem 'guard'
+  gem 'guard-rspec', require: false
+  gem 'guard-annotate'
+  gem 'guard-rubocop'
 end
 
 run 'bundle install'
@@ -152,7 +158,9 @@ inject_into_file 'config/initializers/wine_bouncer.rb', after: "config.auth_stra
 RUBY
 end
 
+generate 'annotate:install'
 
+run 'bundle exec guard init'
 
 generate 'haml:application_layout convert'
 remove_file 'app/views/layouts/application.html.erb'
@@ -160,5 +168,6 @@ rake 'haml:erb2haml'
 
 rake 'db:create'
 rake 'db:migrate'
+
 
 
