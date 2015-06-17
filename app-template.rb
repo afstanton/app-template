@@ -19,6 +19,11 @@ end
 
 gem 'doorkeeper'
 gem 'kaminari'
+gem 'grape'
+gem 'hashie-forbidden_attributes'
+gem 'wine_bouncer'
+gem 'grape-swagger'
+gem 'swagger-ui_rails'
 
 gem_group :development, :test do
   gem 'rspec-rails'
@@ -41,6 +46,7 @@ end
 CODE
 
 file 'app/assets/stylesheets/application.scss', <<-CODE
+//= require swagger-ui
 // "bootstrap-sprockets" must be imported before "bootstrap" and "bootstrap/variables"
 @import "bootstrap-sprockets";
 @import "bootstrap";
@@ -51,6 +57,7 @@ run "rm app/assets/stylesheets/application.css"
 inject_into_file 'app/assets/javascripts/application.js', after: "require jquery\n" do <<-'RUBY'
 //= require ahoy
 //= require bootstrap-sprockets
+//= require swagger-ui
 RUBY
 end
 
@@ -116,6 +123,35 @@ end
 
 generate 'kaminari:config'
 generate 'kaminari:views bootstrap3 -e haml'
+
+application do
+  "config.paths.add File.join('app', 'api'), glob: File.join('**', '*.rb')"
+  "config.autoload_paths += Dir[Rails.root.join('app', 'api', '*')]"
+end
+
+file 'config/initializers/reload_api.rb', <<-CODE
+if Rails.env.development?
+#  ActiveSupport::Dependencies.explicitly_unloadable_constants << "Twitter::API"
+
+  api_files = Dir[Rails.root.join('app', 'api', '**', '*.rb')]
+  api_reloader = ActiveSupport::FileUpdateChecker.new(api_files) do
+    Rails.application.reload_routes!
+  end
+  ActionDispatch::Callbacks.to_prepare do
+    api_reloader.execute_if_updated
+  end
+end
+CODE
+
+generate 'wine_bouncer:initializer'
+
+comment_lines 'config/initializers/wine_bouncer.rb', 'config.auth_strategy = :default'
+inject_into_file 'config/initializers/wine_bouncer.rb', after: "config.auth_strategy = :default\n" do <<-'RUBY'
+  config.auth_strategy = :swagger
+RUBY
+end
+
+
 
 generate 'haml:application_layout convert'
 remove_file 'app/views/layouts/application.html.erb'
