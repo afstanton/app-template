@@ -32,10 +32,12 @@ gem_group :development, :test do
   gem 'jazz_hands', github: 'nixme/jazz_hands', branch: 'bring-your-own-debugger'
   gem 'pry-byebug'
   gem 'did_you_mean'
+  gem 'faker'
 end
 
 gem_group :test do
   gem 'simplecov', :require => false
+  gem 'webmock'
 end
 
 gem_group :development do
@@ -59,6 +61,12 @@ generate 'rspec:install'
 inject_into_file 'spec/spec_helper.rb', before: "# This file was generated" do <<-'RUBY'
 require 'simplecov'
 SimpleCov.start 'rails'
+
+RUBY
+end
+
+inject_into_file 'spec/spec_helper.rb', before: "# This file was generated" do <<-'RUBY'
+require 'webmock/rspec'
 
 RUBY
 end
