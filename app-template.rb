@@ -31,6 +31,7 @@ gem_group :development, :test do
   gem 'factory_girl_rails'
   gem 'jazz_hands', github: 'nixme/jazz_hands', branch: 'bring-your-own-debugger'
   gem 'pry-byebug'
+  gem 'did_you_mean'
 end
 
 gem_group :test do
@@ -48,6 +49,7 @@ gem_group :development do
   gem 'guard-annotate'
   gem 'guard-rubocop'
   gem 'guard-brakeman'
+  gem 'xray-rails'
 end
 
 run 'bundle install'
