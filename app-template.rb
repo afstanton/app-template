@@ -29,6 +29,8 @@ gem 'grape-kaminari'
 gem_group :development, :test do
   gem 'rspec-rails'
   gem 'factory_girl_rails'
+  gem 'jazz_hands', github: 'nixme/jazz_hands', branch: 'bring-your-own-debugger'
+  gem 'pry-byebug'
 end
 
 gem_group :test do
