@@ -24,6 +24,7 @@ gem 'hashie-forbidden_attributes'
 gem 'wine_bouncer'
 gem 'grape-swagger'
 gem 'swagger-ui_rails'
+gem 'grape-kaminari'
 
 gem_group :development, :test do
   gem 'rspec-rails'
