@@ -31,20 +31,38 @@ gem_group :development, :test do
   gem 'factory_girl_rails'
 end
 
+gem_group :test do
+  gem 'simplecov', :require => false
+end
+
 gem_group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'annotate'
   gem 'rubocop', require: false
+  gem 'brakeman', require: false
   gem 'guard'
   gem 'guard-rspec', require: false
   gem 'guard-annotate'
   gem 'guard-rubocop'
+  gem 'guard-brakeman'
 end
 
 run 'bundle install'
 
 generate 'rspec:install'
+
+inject_into_file 'spec/spec_helper.rb', before: "# This file was generated" do <<-'RUBY'
+require 'simplecov'
+SimpleCov.start 'rails'
+
+RUBY
+end
+
+inject_into_file '.gitignore', after: "/tmp\n" do <<-'RUBY'
+coverage
+RUBY
+end
 
 file 'spec/support/devise.rb', <<-CODE
 RSpec.configure do |config|
