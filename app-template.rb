@@ -243,5 +243,7 @@ rake 'haml:erb2haml'
 rake 'db:create'
 rake 'db:migrate'
 
-
+git :init
+git add: "."
+git commit: '-m "Initial commit."'
 
