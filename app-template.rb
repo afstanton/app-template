@@ -26,6 +26,7 @@ gem 'grape-swagger'
 gem 'swagger-ui_rails'
 gem 'grape-kaminari'
 gem 'simple_form'
+gem 'pundit'
 
 gem_group :development, :test do
   gem 'rspec-rails'
@@ -206,6 +207,14 @@ inject_into_file 'config/environments/development.rb', before: "\nend\n" do <<-'
   end
 RUBY
 end
+
+inject_into_file 'app/controllers/application_controller.rb', after: "ActionController::Base\n" do <<-'RUBY'
+  include Pundit
+
+RUBY
+end
+
+generate 'pundit:install'
 
 generate 'haml:application_layout convert'
 remove_file 'app/views/layouts/application.html.erb'
