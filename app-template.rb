@@ -25,6 +25,7 @@ gem 'wine_bouncer'
 gem 'grape-swagger'
 gem 'swagger-ui_rails'
 gem 'grape-kaminari'
+gem 'simple_form'
 
 gem_group :development, :test do
   gem 'rspec-rails'
@@ -55,6 +56,8 @@ gem_group :development do
 end
 
 run 'bundle install'
+
+generate 'simple_form:install --bootstrap'
 
 generate 'rspec:install'
 
