@@ -53,6 +53,7 @@ gem_group :development do
   gem 'guard-rubocop'
   gem 'guard-brakeman'
   gem 'xray-rails'
+  gem 'bullet'
 end
 
 run 'bundle install'
@@ -194,6 +195,17 @@ end
 generate 'annotate:install'
 
 run 'bundle exec guard init'
+
+inject_into_file 'config/environments/development.rb', before: "\nend\n" do <<-'RUBY'
+
+  config.after_initialize do
+    Bullet.enable = true
+    Bullet.bullet_logger = true
+    Bullet.rails_logger = true
+    Bullet.add_footer = true
+  end
+RUBY
+end
 
 generate 'haml:application_layout convert'
 remove_file 'app/views/layouts/application.html.erb'
