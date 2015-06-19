@@ -35,6 +35,7 @@ gem_group :development, :test do
   gem 'pry-byebug'
   gem 'did_you_mean'
   gem 'faker'
+  gem 'quiet_assets'
 end
 
 gem_group :test do
