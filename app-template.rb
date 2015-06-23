@@ -7,6 +7,7 @@ RUBY
 end
 
 postgres = true if yes?("Postgres >= 9.4?")
+heroku = true if yes?("Using Heroku?")
 
 gem 'bootstrap-sass', '~> 3.3.4'
 gem 'haml-rails'
@@ -27,6 +28,7 @@ gem 'swagger-ui_rails'
 gem 'grape-kaminari'
 gem 'simple_form'
 gem 'pundit'
+gem 'puma'
 
 gem_group :development, :test do
   gem 'rspec-rails'
@@ -56,6 +58,12 @@ gem_group :development do
   gem 'guard-brakeman'
   gem 'xray-rails'
   gem 'bullet'
+end
+
+if heroku
+  gem_group :production do
+    gem 'rails_12factor'
+  end
 end
 
 run 'bundle install'
@@ -241,10 +249,26 @@ generate 'haml:application_layout convert'
 remove_file 'app/views/layouts/application.html.erb'
 rake 'haml:erb2haml'
 
+file 'Procfile', <<-CODE
+web: bundle exec puma -t 5:5 -p ${PORT:-3000} -e ${RACK_ENV:-development}
+CODE
+
+run 'echo "RACK_ENV=development" >>.env'
+run 'echo "PORT=3000" >> .env'
+run 'echo ".env" >> .gitignore'
+
+run 'gem install foreman'
+
 rake 'db:create'
 rake 'db:migrate'
 
 git :init
 git add: "."
 git commit: '-m "Initial commit."'
+
+if heroku
+  run 'heroku create'
+  git push: 'heroku master'
+  run 'heroku run rake db:migrate'
+end
 
