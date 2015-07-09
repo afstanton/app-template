@@ -56,6 +56,8 @@ gem_group :development do
   gem 'guard-annotate'
   gem 'guard-rubocop'
   gem 'guard-brakeman'
+  gem 'guard-bundler'
+  gem 'guard-coffeescript'
   gem 'xray-rails'
   gem 'bullet'
 end
