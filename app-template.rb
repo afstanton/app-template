@@ -264,6 +264,9 @@ run 'gem install foreman'
 rake 'db:create'
 rake 'db:migrate'
 
+run 'RAILS_ENV=test rake db:create'
+run 'RAILS_ENV=test rake db:migrate'
+
 git :init
 git add: "."
 git commit: '-m "Initial commit."'
