@@ -198,9 +198,9 @@ RUBY
 end
 # MODIFY FILES 2 END
 
-# GENERATORS 2 BEGIN
+# GENERATORS 3 BEGIN
 generate 'kaminari:views bootstrap3 -e haml'
-# GENERATORS 2 END
+# GENERATORS 3 END
 
 rake 'doc:app'
 
