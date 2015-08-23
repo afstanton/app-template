@@ -24,6 +24,10 @@ if !postgres
   gem 'activeuuid', '>= 0.5.0'
 end
 
+if stripe
+  gem 'stripe-rails'
+end
+
 gem_group :development do
   gem 'rails_apps_testing'
   gem 'rails_apps_pages'
@@ -97,6 +101,10 @@ generate 'kaminari:config'
 
 generate 'annotate:install'
 
+if stripe
+  generate 'stripe:install'
+end
+
 run 'bundle exec guard init'
 # GENERATORS END
 
@@ -122,7 +130,8 @@ file '.gitattributes', <<-CODE
 CODE
 
 inject_into_file '.gitignore', after: "/tmp\n" do <<-'RUBY'
-coverage
+/coverage
+/config/secrets.yml
 RUBY
 end
 
@@ -196,11 +205,13 @@ inject_into_file 'app/assets/javascripts/application.js', after: "require bootst
 //= require ahoy
 RUBY
 end
+
+copy_file 'config/secrets.yml', 'secrets.yml.dist'
 # MODIFY FILES 2 END
 
-# GENERATORS 2 BEGIN
+# GENERATORS 3 BEGIN
 generate 'kaminari:views bootstrap3 -e haml'
-# GENERATORS 2 END
+# GENERATORS 3 END
 
 rake 'doc:app'
 
