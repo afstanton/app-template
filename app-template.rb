@@ -1,8 +1,8 @@
-file '.ruby-version', 'ruby-2.2.2'
+file '.ruby-version', 'ruby-2.2.3'
 file '.ruby-gemset', "#{@app_name}"
 
 inject_into_file 'Gemfile', after: "source 'https://rubygems.org'\n" do <<-'RUBY'
-ruby '2.2.2'
+ruby '2.2.3'
 RUBY
 end
 
