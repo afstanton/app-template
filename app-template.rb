@@ -206,7 +206,7 @@ inject_into_file 'app/assets/javascripts/application.js', after: "require bootst
 RUBY
 end
 
-copy_file 'config/secrets.yml', 'secrets.yml.dist'
+copy_file 'config/secrets.yml', 'config/secrets.yml.dist'
 # MODIFY FILES 2 END
 
 # GENERATORS 3 BEGIN
