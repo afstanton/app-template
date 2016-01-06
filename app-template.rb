@@ -1,8 +1,8 @@
-file '.ruby-version', 'ruby-2.2.3'
+file '.ruby-version', 'ruby-2.3.0'
 file '.ruby-gemset', "#{@app_name}"
 
 inject_into_file 'Gemfile', after: "source 'https://rubygems.org'\n" do <<-'RUBY'
-ruby '2.2.3'
+ruby '2.3.0'
 RUBY
 end
 
@@ -11,6 +11,7 @@ heroku = true if yes?("Using Heroku?")
 stripe = true if yes?("Use Stripe?")
 
 # GEMS BEGIN
+gem 'sprockets-rails', '< 3.0.0' # remove this once xray-rails is fixed
 gem 'high_voltage'
 gem 'devise'
 gem 'pundit'
@@ -131,7 +132,6 @@ CODE
 
 inject_into_file '.gitignore', after: "/tmp\n" do <<-'RUBY'
 /coverage
-/config/secrets.yml
 RUBY
 end
 
@@ -212,6 +212,12 @@ copy_file 'config/secrets.yml', 'config/secrets.yml.dist'
 # GENERATORS 3 BEGIN
 generate 'kaminari:views bootstrap3 -e haml'
 # GENERATORS 3 END
+
+# API MODS BEGIN
+
+
+
+# API MODS END
 
 rake 'doc:app'
 
