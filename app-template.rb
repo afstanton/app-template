@@ -85,8 +85,6 @@ run 'bundle install --gemfile=.overcommit_gems'
 
 generate 'testing:configure rspec --force'
 
-generate 'simple_form:install --bootstrap'
-
 generate 'devise:install'
 generate 'devise user'
 
@@ -145,6 +143,7 @@ end
 
 inject_into_file 'config/environments/development.rb', before: "\nend\n" do
   <<-CODE
+
   config.after_initialize do
     Bullet.enable = true
     Bullet.bullet_logger = true
@@ -198,6 +197,8 @@ generate 'layout:devise bootstrap3 --force'
 gem 'slim-rails'
 
 run 'bundle install'
+
+generate 'simple_form:install --bootstrap'
 
 generate 'kaminari:views bootstrap3 -e slim'
 
@@ -254,9 +255,9 @@ PreCommit:
   ScssLint:
     enabled: true
   SlimLint:
-    enabled: true
+    enabled: false
   TravisLint:
-    enabled: true'
+    enabled: true
   YamlSyntax:
     enabled: true
 CODE
