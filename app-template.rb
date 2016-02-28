@@ -1,5 +1,7 @@
+# rubocop:disable Style/FileName
 file '.ruby-version', 'ruby-2.3.0'
 file '.ruby-gemset', @app_name.to_s
+# rubocop:enable Style/FileName
 
 inject_into_file 'Gemfile', after: "source 'https://rubygems.org'\n" do
   <<-CODE
@@ -40,6 +42,7 @@ gem_group :development do
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
   gem 'scss_lint', require: false
+  gem 'slim_lint', require: false
   gem 'xray-rails'
 end
 
@@ -74,6 +77,7 @@ gem 'reek'
 gem 'rubocop'
 gem 'rubocop-rspec'
 gem 'scss_lint'
+gem 'slim_lint'
 CODE
 
 run 'bundle install'
@@ -150,7 +154,8 @@ inject_into_file 'config/environments/development.rb', before: "\nend\n" do
 CODE
 end
 
-inject_into_file 'app/controllers/application_controller.rb', after: "ActionController::Base\n" do
+inject_into_file 'app/controllers/application_controller.rb',
+                 after: "ActionController::Base\n" do
   <<-CODE
   include Pundit
 
@@ -167,6 +172,9 @@ CODE
 
 file '.rubocop.yml', <<CODE
 require: rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 2.3
 
 Rails:
   Enabled: true
@@ -195,7 +203,8 @@ generate 'kaminari:views bootstrap3 -e slim'
 
 run 'erb2slim -d .'
 
-inject_into_file 'app/assets/javascripts/application.js', after: "require bootstrap-sprockets\n" do
+inject_into_file 'app/assets/javascripts/application.js',
+                 after: "require bootstrap-sprockets\n" do
   <<-CODE
 //= require ahoy
 CODE
