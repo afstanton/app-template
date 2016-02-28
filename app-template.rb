@@ -48,7 +48,11 @@ end
 
 gem_group :development, :test do
   gem 'factory_girl_rails'
+  gem 'faker'
+  gem 'jazz_hands', github: 'nixme/jazz_hands',
+                    branch: 'bring-your-own-debugger'
   gem 'quiet_assets'
+  gem 'pry-byebug'
   gem 'rspec-rails'
 end
 
@@ -141,6 +145,13 @@ SimpleCov.start 'rails'
 CODE
 end
 
+file 'spec/support/devise.rb', <<-CODE
+RSpec.configure do |config|
+  config.include Devise::TestHelpers, type: :controller
+  config.include Devise::TestHelpers, type: :view
+end
+CODE
+
 inject_into_file 'config/environments/development.rb', before: "\nend\n" do
   <<-CODE
 
@@ -210,6 +221,56 @@ inject_into_file 'app/assets/javascripts/application.js',
 //= require ahoy
 CODE
 end
+
+gem 'doorkeeper'
+
+run 'bundle install'
+
+generate 'doorkeeper:install'
+generate 'doorkeeper:migration'
+generate 'doorkeeper:application_owner'
+
+inject_into_file 'app/controllers/application_controller.rb',
+                 after: "protect_from_forgery with: :exception\n" do
+  <<-CODE
+  private
+
+  def current_resource_owner
+    User.find(doorkeeper_token.resource_owner_id) if doorkeeper_token
+  end
+
+CODE
+end
+
+# rubocop:disable Metrics/LineLength
+comment_lines 'config/initializers/doorkeeper.rb',
+              'fail "Please configure doorkeeper resource_owner_authenticator block located in #{__FILE__}"'
+# rubocop:enable Metrics/LineLength
+
+inject_into_file 'config/initializers/doorkeeper.rb',
+                 after: "enable_application_owner :confirmation => false\n" do
+  <<-CODE
+  enable_application_owner :confirmation => true
+CODE
+end
+
+inject_into_file 'config/initializers/doorkeeper.rb',
+                 after: "resource_owner_authenticator do\n" do
+  <<-CODE
+    current_user || warden.authenticate!(scope: :user)
+CODE
+end
+
+inject_into_file 'app/models/user.rb',
+                 after:
+  ":recoverable, :rememberable, :trackable, :validatable\n" do
+  <<-CODE
+  has_many :oauth_applications, class_name: 'Doorkeeper::Application', as: :owner
+CODE
+end
+
+rake 'db:migrate'
+run 'RAILS_ENV=test rake db:migrate'
 
 rake 'doc:app'
 
