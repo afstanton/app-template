@@ -32,6 +32,7 @@ gem_group :development do
   gem 'html2slim', require: false
   gem 'image_optim', require: false
   gem 'image_optim_pack', require: false
+  gem 'letter_opener_web', '~> 1.2.0'
   gem 'metric_fu', require: false
   gem 'overcommit', require: false
   gem 'rails_apps_testing', require: false
@@ -108,6 +109,16 @@ generate 'kaminari:config'
 application(nil, env: 'development') do
   "config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }"
 end
+
+application(nil, env: 'development') do
+  'config.action_mailer.delivery_method = :letter_opener'
+end
+
+route <<-CODE
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
+CODE
 
 file '.gitattributes', <<-CODE
 # Auto detect text files and perform LF normalization
