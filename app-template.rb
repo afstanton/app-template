@@ -1,88 +1,87 @@
 file '.ruby-version', 'ruby-2.3.0'
-file '.ruby-gemset', "#{@app_name}"
+file '.ruby-gemset', @app_name.to_s
 
-inject_into_file 'Gemfile', after: "source 'https://rubygems.org'\n" do <<-'RUBY'
+inject_into_file 'Gemfile', after: "source 'https://rubygems.org'\n" do
+  <<-CODE
 ruby '2.3.0'
-RUBY
+CODE
 end
 
-postgres = true if yes?("Postgres >= 9.4?")
-heroku = true if yes?("Using Heroku?")
-stripe = true if yes?("Use Stripe?")
-
-# GEMS BEGIN
-gem 'sprockets-rails', '< 3.0.0' # remove this once xray-rails is fixed
-gem 'high_voltage'
-gem 'devise'
-gem 'pundit'
-gem 'bootstrap-sass'
 gem 'ahoy_matey'
-gem 'simple_form'
+gem 'bootstrap-sass'
+gem 'browser', '~> 1.1'
+gem 'chamber'
+gem 'devise'
+gem 'high_voltage'
 gem 'kaminari'
-gem 'puma'
-
-if !postgres
-  gem 'activeuuid', '>= 0.5.0'
-end
-
-if stripe
-  gem 'stripe-rails'
-end
+gem 'pundit'
+gem 'simple_form'
 
 gem_group :development do
-  gem 'rails_apps_testing'
-  gem 'rails_apps_pages'
-  gem 'rails_layout'
   gem 'annotate'
   gem 'better_errors'
   gem 'binding_of_caller'
-  gem 'rubocop', require: false
   gem 'brakeman', require: false
-  gem 'metric_fu', require: false
-  gem 'xray-rails'
   gem 'bullet'
-  gem 'guard'
+  gem 'guard', require: false
+  gem 'guard-brakeman', require: false
   gem 'guard-rspec', require: false
-  gem 'guard-annotate'
-  gem 'guard-rubocop'
-  gem 'guard-brakeman'
-  gem 'guard-bundler'
-  gem 'guard-coffeescript'
+  gem 'guard-rubocop', require: false
+  gem 'html2slim', require: false
+  gem 'image_optim', require: false
+  gem 'image_optim_pack', require: false
+  gem 'metric_fu', require: false
+  gem 'overcommit', require: false
+  gem 'rails_apps_testing', require: false
+  gem 'rails_apps_pages', require: false
+  gem 'rails_layout', require: false
+  gem 'rails_best_practices', require: false
+  gem 'reek', require: false
+  gem 'rubocop', require: false
+  gem 'rubocop-rspec', require: false
+  gem 'scss_lint', require: false
+  gem 'xray-rails'
 end
 
 gem_group :development, :test do
-  gem 'rspec-rails'
   gem 'factory_girl_rails'
   gem 'quiet_assets'
+  gem 'rspec-rails'
 end
 
 gem_group :test do
   gem 'capybara'
   gem 'database_cleaner'
   gem 'launchy'
-  gem 'selenium-webdriver'
   gem 'poltergeist'
-  gem 'phantomjs', :require => 'phantomjs/poltergeist'
-  gem 'simplecov', :require => false
+  gem 'phantomjs', require: 'phantomjs/poltergeist'
+  gem 'selenium-webdriver'
+  gem 'simplecov', require: false
   gem 'webmock'
-  gem 'mutant-rspec'
 end
 
-if heroku
-  gem_group :production do
-    gem 'rails_12factor'
-  end
-end
-# GEMS END
+file '.overcommit_gems', <<-CODE
+source 'https://rubygems.org'
+ruby '2.3.0'
+
+gem 'brakeman'
+gem 'chamber'
+gem 'image_optim'
+gem 'image_optim_pack'
+gem 'overcommit'
+gem 'rails_best_practices'
+gem 'reek'
+gem 'rubocop'
+gem 'rubocop-rspec'
+gem 'scss_lint'
+CODE
 
 run 'bundle install'
-
-run 'gem install foreman'
-
-# GENERATORS BEGIN
-generate 'simple_form:install --bootstrap'
+run 'bundle install --gemfile=.overcommit_gems'
 
 generate 'testing:configure rspec --force'
+
+generate 'simple_form:install --bootstrap'
 
 generate 'devise:install'
 generate 'devise user'
@@ -100,16 +99,10 @@ generate 'ahoy:stores:active_record'
 
 generate 'kaminari:config'
 
-generate 'annotate:install'
-
-if stripe
-  generate 'stripe:install'
+application(nil, env: 'development') do
+  "config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }"
 end
 
-run 'bundle exec guard init'
-# GENERATORS END
-
-# MODIFY FILES BEGIN
 file '.gitattributes', <<-CODE
 # Auto detect text files and perform LF normalization
 * text=auto
@@ -130,54 +123,58 @@ file '.gitattributes', <<-CODE
 *.RTF    diff=astextplain
 CODE
 
-inject_into_file '.gitignore', after: "/tmp\n" do <<-'RUBY'
+inject_into_file '.gitignore', after: "/tmp\n" do
+  <<-CODE
 /coverage
-RUBY
-end
-
-file 'Procfile', <<-CODE
-web: bundle exec puma -t 5:5 -p ${PORT:-3000} -e ${RACK_ENV:-development}
 CODE
-
-run 'echo "RACK_ENV=development" >>.env'
-run 'echo "PORT=3000" >> .env'
-
-run 'echo ".env" >> .gitignore'
-
-application(nil, env: "development") do
-  "config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }"
 end
 
-inject_into_file 'app/controllers/application_controller.rb', after: "ActionController::Base\n" do <<-'RUBY'
-  include Pundit
-
-RUBY
-end #done
-
-inject_into_file 'spec/spec_helper.rb', before: "# This file was generated" do <<-'RUBY'
+inject_into_file 'spec/spec_helper.rb', before: '# This file was generated' do
+  <<-CODE
 require 'simplecov'
-SimpleCov.start 'rails'
-
-RUBY
-end
-
-inject_into_file 'spec/spec_helper.rb', before: "# This file was generated" do <<-'RUBY'
 require 'webmock/rspec'
 
-RUBY
+SimpleCov.start 'rails'
+
+CODE
 end
 
-inject_into_file 'config/environments/development.rb', before: "\nend\n" do <<-'RUBY'
-
+inject_into_file 'config/environments/development.rb', before: "\nend\n" do
+  <<-CODE
   config.after_initialize do
     Bullet.enable = true
     Bullet.bullet_logger = true
     Bullet.rails_logger = true
     Bullet.add_footer = true
   end
-RUBY
+CODE
 end
-# MODIFY FILES END
+
+inject_into_file 'app/controllers/application_controller.rb', after: "ActionController::Base\n" do
+  <<-CODE
+  include Pundit
+
+CODE
+end
+
+rakefile 'rubocop.rake', <<-CODE
+require 'rubocop/rake_task'
+
+RuboCop::RakeTask.new do |task|
+  task.requires << 'rubocop-rspec'
+end
+CODE
+
+file '.rubocop.yml', <<CODE
+require: rubocop-rspec
+
+Rails:
+  Enabled: true
+CODE
+
+generate 'annotate:install'
+
+run 'bundle exec guard init'
 
 rake 'db:create'
 rake 'db:migrate'
@@ -185,49 +182,78 @@ rake 'db:migrate'
 run 'RAILS_ENV=test rake db:create'
 run 'RAILS_ENV=test rake db:migrate'
 
-# GENERATORS 2 BEGIN
 generate 'pages:users --force'
 generate 'pages:authorized --force'
 
 generate 'layout:devise bootstrap3 --force'
-# GENERATORS 2 END
 
-# GEMS 2 BEGIN
-gem 'haml-rails'
-# GEMS 2 END
+gem 'slim-rails'
 
 run 'bundle install'
 
-# MODIFY FILES 2 BEGIN
-rake 'haml:erb2haml'
+generate 'kaminari:views bootstrap3 -e slim'
 
-inject_into_file 'app/assets/javascripts/application.js', after: "require bootstrap-sprockets\n" do <<-'RUBY'
+run 'erb2slim -d .'
+
+inject_into_file 'app/assets/javascripts/application.js', after: "require bootstrap-sprockets\n" do
+  <<-CODE
 //= require ahoy
-RUBY
+CODE
 end
-
-copy_file 'config/secrets.yml', 'config/secrets.yml.dist'
-# MODIFY FILES 2 END
-
-# GENERATORS 3 BEGIN
-generate 'kaminari:views bootstrap3 -e haml'
-# GENERATORS 3 END
-
-# API MODS BEGIN
-
-
-
-# API MODS END
 
 rake 'doc:app'
 
-git :init
-git add: "."
-git commit: '-m "Initial commit."'
+rake 'rubocop:auto_correct'
+run 'rubocop --auto-gen-config'
 
-if heroku
-  run 'heroku create'
-  git push: 'heroku master'
-  run 'heroku run rake db:migrate'
+inject_into_file '.rubocop.yml', before: 'require' do
+  <<-CODE
+inherit_from: .rubocop_todo.yml
+
+CODE
 end
 
+git :init
+
+run 'overcommit --install'
+
+inject_into_file '.overcommit.yml', after: 'HEAD changes' do
+  <<-CODE
+gemfile: .overcommit_gems
+
+PreCommit:
+  Brakeman:
+    enabled: true
+  BundleCheck:
+    enabled: true
+  ChamberSecurity:
+    enabled: true
+  CoffeeLint:
+    enabled: false
+  CssLint:
+    enabled: true
+  ImageOptim:
+    enabled: false
+  JsHint:
+    enabled: true
+  RailsBestPractices:
+    enabled: false
+  Reek:
+    enabled: false
+  RuboCop:
+    enabled: true
+  ScssLint:
+    enabled: true
+  SlimLint:
+    enabled: true
+  TravisLint:
+    enabled: true'
+  YamlSyntax:
+    enabled: true
+CODE
+end
+
+run 'overcommit --sign'
+
+git add: '.'
+git commit: '-m "Initial commit"'
