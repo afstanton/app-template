@@ -1,11 +1,11 @@
 # rubocop:disable Style/FileName
-file '.ruby-version', 'ruby-2.3.0'
+file '.ruby-version', 'ruby-2.3.1'
 file '.ruby-gemset', @app_name.to_s
 # rubocop:enable Style/FileName
 
 inject_into_file 'Gemfile', after: "source 'https://rubygems.org'\n" do
   <<-CODE
-ruby '2.3.0'
+ruby '2.3.1'
 CODE
 end
 
@@ -317,7 +317,7 @@ PreCommit:
   ImageOptim:
     enabled: false
   JsHint:
-    enabled: true
+    enabled: false
   RailsBestPractices:
     enabled: false
   Reek:
